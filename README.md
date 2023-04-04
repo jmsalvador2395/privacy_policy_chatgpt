@@ -93,8 +93,8 @@ class DirectiveText{
 | ----- | ---- |
 | No Context | "document 1: `ref_documents[0]`, document 2: `ref_documents[1]`, $\ldots$"
 | Some Context | "I have $n$ `[document_type]` documents that I would like you to look at. The first document is `ref_documents[0]`. The second ..." |
-| Most Context | "I have been given $n$ `[document_type(s)]`. These `[document_type(s)]` are used to disclose how certain companies collect data and how it is shared. Here are the documents I've been given..." |
-| Full Context | "I have been given $n$ `[document_type(s)]`. These `[document_type(s)]` are used to disclose how certain companies collect data and how it is shared. `[specify formatting]`. Here are the documents I've been given..." |
+| Most Context | "I have been given $n$ `[document_type(s)]`. These `[document_type(s)]` are used to disclose how certain companies collect user data and how that data is shared. Here are the documents I've been given..." |
+| Full Context | "I have been given $n$ `[document_type(s)]`. These `[document_type(s)]` are used to disclose how certain companies collect user data and how that data is shared. `[specify formatting]`. Here are the documents I've been given..." |
 
 ### Directive Text Options
 | Style | Text |
