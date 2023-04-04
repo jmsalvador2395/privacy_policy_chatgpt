@@ -90,15 +90,15 @@ class DirectiveText{
 
 ### Scenario Text Options
 | Style | Text |
-| - | - |
-| No Context | "document 1: $\text{\texttt{ref\_documents[0]}}$, document 2: $\text{\texttt{ref\_documents[1]}}$, $\ldots$"
-| Some Context | "I have $n$ $\text{\texttt{[document\_type]}}$ documents that I would like you to look at. The first document is $\text{\texttt{ref\_documents[0]}}$. The second ..." |
-| Most Context | "I have been given $n$ $\text{\texttt{[document\_type(s)]}}$. These $\text{\texttt{[document\_type(s)]}}$ are used to disclose how certain companies collect data and how it is shared. Here are the documents I've been given..." |
-| Full Context | "I have been given $n$ $\text{\texttt{[document\_type(s)]}}$. These $\text{\texttt{[document\_type(s)]}}$ are used to disclose how certain companies collect data and how it is shared. $\text{\texttt{[specify formatting]}}$. Here are the documents I've been given..." |
+| ----- | ---- |
+| No Context | "document 1: `ref_documents[0]`, document 2: `ref_documents[1]`, $\ldots$"
+| Some Context | "I have $n$ `[document_type]` documents that I would like you to look at. The first document is `ref_documents[0]`. The second ..." |
+| Most Context | "I have been given $n$ `[document_type(s)]`. These `[document_type(s)]` are used to disclose how certain companies collect data and how it is shared. Here are the documents I've been given..." |
+| Full Context | "I have been given $n$ `[document_type(s)]`. These `[document_type(s)]` are used to disclose how certain companies collect data and how it is shared. `[specify formatting]`. Here are the documents I've been given..." |
 
 ### Directive Text Options
 | Style | Text |
-| - | - | 
-| No Context | "$\text{\texttt{question\_list[0]}}$, $\text{\texttt{question\_list[1]}}$, $\ldots$"  |
-| With Context | "based off of the previously given documents please answer the following questions: 1) $\text{\texttt{question\_list[0]}}$,  2) ..." |
+| ----- | ---- | 
+| No Context | `question_list[0]`, `question_list[1]`, $\ldots$"  |
+| With Context | "based off of the previously given documents please answer the following questions: 1) `question_list[0]`,  2) ..." |
 
