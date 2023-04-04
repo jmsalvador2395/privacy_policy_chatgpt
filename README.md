@@ -1,6 +1,5 @@
 # Notes
 ---
-* api key : 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
 * All prompts will ask the same thing. the difference is going to be in how the questions are formulated.
 * everything will be asked for at the same time
 * asking questions first feels unnatural. more focus should be given to providing the scenario first
