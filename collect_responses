@@ -1,0 +1,94 @@
+#!/usr/bin/env python
+
+import openai
+import datasets
+import numpy as np
+from tqdm import tqdm
+from datasets import Dataset
+
+from prompt_eng.prompts import Prompt
+
+def load_ds():
+	ds = datasets.load_dataset(
+		'csv',
+		data_files=['/data/john/datasets/privacy_policy/privacy_pairs.csv'],
+		num_proc=10,
+		cache_dir='./.cache'
+		
+	)
+	return ds['train']
+
+if __name__ == '__main__':
+
+	with open('api_key', 'r') as f:
+		openai.api_key = f.read().strip()
+
+	ds = load_ds()
+
+	# document types
+	doc_type = {
+		'singular' : 'privacy policy',
+		'plural' : 'privacy policies',
+	}
+
+	# contextual knowledge of documents
+	context = f'These {doc_type["plural"]} are used to disclose how certain companies collect user data and how that data is shared.'
+
+	# questions on the data
+	used_questions = [	
+		"what are any similarities in how each company uses my data.",
+		"are there any differences in how each company uses my data.",
+		"which third party entities are mentioned in both policies.",
+		"what are the third parties that are only mentioned in one of the given policies.",
+		"what kind of data is collected by both policies.",
+		"what kind of data is exclusively collected by each policy.",
+		"what kind of data is protected by both policies.",
+		"what kind of data is exclusively protected by each policy.",
+	]
+
+	prompt_generator = Prompt(
+		used_questions, 
+		doc_type,
+		context,
+	)
+	
+	num_choices = 3
+
+	sample_ids = []
+	while len(sample_ids) < num_choices:
+		candidate = int(np.random.choice(len(ds)))
+		sample = ds[candidate]
+		if len(sample['Context_Company_1']) + len(sample['Context_Company_2']) < 3500:
+			sample_ids.append(candidate)
+	
+	all_messages = []
+	for i in tqdm(sample_ids, total=len(sample_ids), desc='building prompts and gathering responses'):
+		sample = ds[int(i)]
+		prompts = prompt_generator.gen_prompts([
+				sample['Context_Company_1'],
+				sample['Context_Company_2'],
+		])
+		messages = [
+			{'role' : 'user', 
+			'row' : int(i),
+			'type' : key,
+			'content' : val}
+			for (key, val) in prompts.items()
+		]
+		for j, msg in enumerate(messages):
+			
+			response = openai.ChatCompletion.create(
+				model="gpt-3.5-turbo",
+				messages=[{
+					'role' : 'user',
+					'content' : msg['content']
+				}]
+			)
+			messages[j].update({
+				'response' : response['choices'][0]['message']['content']
+			})
+		all_messages += messages
+
+	output_ds = Dataset.from_list(all_messages)
+	output_ds.to_csv('results.csv')
+
