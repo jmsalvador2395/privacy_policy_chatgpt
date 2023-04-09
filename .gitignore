@@ -1,2 +1,5 @@
 api_key
 .cache/
+
+*.pyc
+__pycache__

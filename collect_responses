@@ -6,24 +6,15 @@ import numpy as np
 from tqdm import tqdm
 from datasets import Dataset
 
+from prompt_eng import questions
 from prompt_eng.prompts import Prompt
 
-def load_ds():
-	ds = datasets.load_dataset(
-		'csv',
-		data_files=['/data/john/datasets/privacy_policy/privacy_pairs.csv'],
-		num_proc=10,
-		cache_dir='./.cache'
-		
-	)
-	return ds['train']
-
-if __name__ == '__main__':
-
+def main():
 	with open('api_key', 'r') as f:
 		openai.api_key = f.read().strip()
 
 	ds = load_ds()
+	categories = set(ds['Category'])
 
 	# document types
 	doc_type = {
@@ -34,45 +25,45 @@ if __name__ == '__main__':
 	# contextual knowledge of documents
 	context = f'These {doc_type["plural"]} are used to disclose how certain companies collect user data and how that data is shared.'
 
-	# questions on the data
-	used_questions = [	
-		"what are any similarities in how each company uses my data.",
-		"are there any differences in how each company uses my data.",
-		"which third party entities are mentioned in both policies.",
-		"what are the third parties that are only mentioned in one of the given policies.",
-		"what kind of data is collected by both policies.",
-		"what kind of data is exclusively collected by each policy.",
-		"what kind of data is protected by both policies.",
-		"what kind of data is exclusively protected by each policy.",
-	]
+	quest = questions.init()
+	breakpoint()
 
 	prompt_generator = Prompt(
-		used_questions, 
+		quest, 
 		doc_type,
 		context,
 	)
 	
 	num_choices = 3
 
+	candidates = {}
+	for i, sample in enumerate(ds):
+		if len(sample['Company_1']) + len(sample['Company_2']) < 3500:
+			candidates[i] = sample
+	
+	breakpoint()
+
 	sample_ids = []
 	while len(sample_ids) < num_choices:
 		candidate = int(np.random.choice(len(ds)))
 		sample = ds[candidate]
-		if len(sample['Context_Company_1']) + len(sample['Context_Company_2']) < 3500:
+		if len(sample['Company_1']) + len(sample['Company_2']) < 3500:
 			sample_ids.append(candidate)
 	
 	all_messages = []
 	for i in tqdm(sample_ids, total=len(sample_ids), desc='building prompts and gathering responses'):
 		sample = ds[int(i)]
 		prompts = prompt_generator.gen_prompts([
-				sample['Context_Company_1'],
-				sample['Context_Company_2'],
+				sample['Company_1'],
+				sample['Company_2'],
 		])
 		messages = [
-			{'role' : 'user', 
-			'row' : int(i),
-			'type' : key,
-			'content' : val}
+			{
+				'role' : 'user', 
+				'row' : int(i),
+				'type' : key,
+				'content' : val
+			}
 			for (key, val) in prompts.items()
 		]
 		for j, msg in enumerate(messages):
@@ -92,3 +83,24 @@ if __name__ == '__main__':
 	output_ds = Dataset.from_list(all_messages)
 	output_ds.to_csv('results.csv')
 
+def load_ds():
+	ds = datasets.load_dataset(
+		'csv',
+		data_files=['/data/john/datasets/privacy_policy/final_with_v2csv.csv'],
+		num_proc=10,
+		cache_dir='./.cache'
+		
+	)
+	return ds['train']
+
+def rand_ex(candidates, category='Other'):
+	examples = {key:val for key, val in candidates.items() if val['Category'] == category}
+	import json
+	from copy import deepcopy
+	ex = deepcopy(examples[np.random.choice(list(examples.keys()))])
+	print(f'\"Company_1" : {ex.pop("Company_1")}\n')
+	print(f'\"Company_2" : {ex.pop("Company_2")}\n')
+	print(json.dumps(ex, indent=4))
+
+if __name__ == '__main__':
+	main()
